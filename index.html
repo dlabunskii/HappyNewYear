@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Новогодний сюрприз</title>
+  <style>
+    body{
+      background:#f6f6f6;
+      font-family: Georgia, serif;
+      text-align:center;
+      padding:40px 16px;
+      color:#222;
+    }
+    .card{
+      max-width:520px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:18px;
+      padding:26px 22px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    }
+    img{
+      width:300px;
+      max-width:85%;
+      cursor:pointer;
+      transition:transform .25s ease;
+      border-radius:14px;
+    }
+    img:hover{ transform: scale(1.03); }
+    .muted{ color:#666; font-size:14px; line-height:1.45; }
+    input{
+      width:min(360px, 90%);
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid #ddd;
+      font-size:16px;
+      margin-top:10px;
+      outline:none;
+    }
+    input:focus{ border-color:#aaa; }
+    .row{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    button{
+      padding:10px 14px;
+      border-radius:12px;
+      border:0;
+      cursor:pointer;
+      font-size:15px;
+    }
+    .btn{ background:#222; color:#fff; }
+    .btn2{ background:#e9e9e9; color:#222; }
+    .hint{
+      margin-top:14px;
+      font-size:15px;
+      min-height:22px;
+    }
+    a{
+      display:inline-block;
+      margin-top:14px;
+      font-size:18px;
+      color:#222;
+      text-decoration:none;
+      border-bottom:1px solid #aaa;
+      padding-bottom:2px;
+    }
+    .hidden{ display:none; }
+    .spark{
+      display:inline-block;
+      animation: pop .9s ease-in-out infinite alternate;
+    }
+    @keyframes pop { from{transform:translateY(0)} to{transform:translateY(-3px)} }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <!-- ЭТАП 1 -->
+    <div id="stage1">
+      <img
+        src="https://downloader.disk.yandex.com/preview/edefc56a5d7f6556bbf4082ece8f84a1bf14aa45a80db41ff2fbf1e4da1183da/69557f79/gF2Cv0y28UjgyOHxO1c2uKKlsSq5-9jTFiXQJrsqMO2dXp2yauLfGncS3h8XGYgZp7m4dGTfvmLkDle-bJz7vw%3D%3D?uid=0&filename=annie-spratt-HZuJfZlXVQY-unsplash.jpg&disposition=inline&hash=&limit=0&content_type=image%2Fjpeg&owner_uid=0&tknv=v3&size=1920x919"/
+        alt="Подарок"
+        onclick="goToGuess()"
+      />
+      <h2>С Новым годом, любимая <span class="spark">🤍</span></h2>
+      <p class="muted">
+        Нажми на подарок, чтобы начать…<br>
+        А потом попробуй угадать, что внутри 🙂
+      </p>
+      <button class="btn2" onclick="goToGuess()">Начать</button>
+    </div>
+
+    <!-- ЭТАП 2 -->
+    <div id="stage2" class="hidden">
+      <h3>Мини-игра: угадай, что внутри 🎁</h3>
+      <p class="muted">
+        Напиши свою версию ниже (достаточно одного слова).<br>
+        Будут небольшие подсказки. Или… можно сдаться 😄
+      </p>
+
+      <input id="guess" type="text" placeholder="Твой вариант…" autocomplete="off" />
+      <div class="row">
+        <button class="btn" onclick="checkGuess()">Проверить</button>
+        <button class="btn2" onclick="giveHint()">Подсказка</button>
+        <button class="btn2" onclick="openGift()">Ладно, сдаюсь — открыть</button>
+      </div>
+
+      <div id="hint" class="hint"></div>
+    </div>
+
+    <!-- ЭТАП 3 -->
+    <div id="stage3" class="hidden">
+      <h2>Это момент только для тебя 🤍</h2>
+      <p class="muted">
+        Немного тишины, тепла и полного расслабления —<br>
+        когда ты вернёшься в Бельгию.
+      </p>
+
+      <a href="https://app.kivalo.be/api/coupons/pdf/KIV-ARNDBBZ06L?limit=100&offset=0" target="_blank" rel="noopener">
+        Открыть сертификат Katara ✨
+      </a>
+
+      <p class="muted" style="margin-top:18px;">
+        С любовью,<br><b>Дима</b>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const answers = [
+      "спа", "spa", "релакс", "отдых", "wellness", "катара",
+      "katara", "сауна", "хаммам", "хамам", "сертификат"
+    ];
+
+    const hints = [
+      "Подсказка 1: это не вещь, а впечатление.",
+      "Подсказка 2: тепло, тишина и перезагрузка.",
+      "Подсказка 3: вода, пар и глубокое расслабление.",
+      "Подсказка 4: это ждёт тебя в Бельгии 😉"
+    ];
+    let hintIndex = 0;
+    let attempts = 0;
+
+    function goToGuess(){
+      document.getElementById("stage1").classList.add("hidden");
+      document.getElementById("stage2").classList.remove("hidden");
+      setTimeout(() => document.getElementById("guess").focus(), 50);
+    }
+
+    function normalize(s){
+      return (s || "").trim().toLowerCase();
+    }
+
+    function checkGuess(){
+      const g = normalize(document.getElementById("guess").value);
+      attempts++;
+
+      if(!g){
+        setHint("Сначала напиши хоть что-нибудь 🙂");
+        return;
+      }
+
+      const ok = answers.some(a => g.includes(a));
+      if(ok){
+        setHint("Очень близко 😄 Ладно, ты угадала. Открываем!");
+        setTimeout(openGift, 650);
+        return;
+      }
+
+      const fun = [
+        "Не совсем 😄 Попробуй подумать про место или опыт.",
+        "Хорошая версия… но нет 🙂 Хочешь подсказку?",
+        "По настроению близко, но не по смыслу 😉",
+        "Нет, но фантазия у тебя отличная 😄"
+      ];
+      setHint(fun[Math.min(attempts-1, fun.length-1)]);
+    }
+
+    function giveHint(){
+      setHint(hints[Math.min(hintIndex, hints.length-1)]);
+      hintIndex++;
+      if(hintIndex > hints.length) hintIndex = hints.length;
+    }
+
+    function setHint(text){
+      document.getElementById("hint").textContent = text;
+    }
+
+    function openGift(){
+      document.getElementById("stage2").classList.add("hidden");
+      document.getElementById("stage3").classList.remove("hidden");
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" && !document.getElementById("stage2").classList.contains("hidden")){
+        checkGuess();
+      }
+    });
+  </script>
+</body>
+</html>
